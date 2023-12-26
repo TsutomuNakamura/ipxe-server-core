@@ -1,0 +1,38 @@
+# You can change a name of interface depends on your environment.
+interface={{ interface_name }}
+bind-interfaces
+domain=example.com
+
+## * Option 1
+## If you want to use dnsmasq as a stand alone DHCP server,
+## you should set "dhcp-range", "dhcp-option=option:router", "dhcp-option=option:dns-server".
+## Or you can specify these parameters as arguments when running dnsmasq.
+#dhcp-range=172.31.0.201,172.31.0.250,255.255.0.0
+#dhcp-option=option:router,172.31.0.1
+#dhcp-option=option:dns-server,1.1.1.1
+#dhcp-option=option:dns-server,8.8.8.8
+
+## * Option 2
+## If you want to use another DHCP server that has been already running in your network,
+## you should set dnamasq as proxy mode by setting "dhcp-range=x.x.x.x,proxy (x.x.x.x is a IP of pxe-server)".
+## Or you can specify these parameters as arguments when running dnsmasq.
+dhcp-range={{ ipxe_server_ip }},proxy
+
+enable-tftp
+tftp-root=/pxeboot
+
+# gPXE/iPXE sends a 175 option.
+dhcp-match=set:ipxe,175
+
+# boot config for BIOS systems
+dhcp-match=set:bios-x86,option:client-arch,0
+dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ipxe_server_ip }}
+dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ next_server_ip }}/os/config/boot.ipxe,{{ next_server_ip }}
+
+pxe-service=x86PC,"splash"
+
+# boot config for UEFI systems
+dhcp-match=set:efi-x86_64,option:client-arch,7
+dhcp-match=set:efi-x86_64,option:client-arch,9
+dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,{{ ipxe_server_ip }}
+dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ next_server_ip }}/os/config/boot.ipxe,{{ next_server_ip }}
