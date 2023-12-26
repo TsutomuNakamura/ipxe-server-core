@@ -1,21 +1,43 @@
 #!/usr/bin/env python3
 
-import os, sys
-import jinja2
+import os, sys, jinja2, subprocess
+
+class Dnsmasq:
+    def __init__(self, script_dir):
+        self.script_dir = script_dir
+
+    def create_config(self, ipxe_server_ip, next_server_ip):
+        # Create /etc/dnsmasq.conf from a template
+        with open(os.path.join(self.script_dir, '/etc/dnsmasq.conf.j2'), 'r') as f:
+            template = jinja2.Template(f.read())
+            content = template.render({"ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
+
+        with open('/etc/dnsmasq.conf', 'w') as f:
+            f.write(content)
+
+
+class Network:
+    @staticmethod
+    def get_interface():
+        # Get the interface name
+        return subprocess.check_output(["ip", "route"]).decode("utf-8").split("dev ")[1].split(" ")[0]
+    @staticmethod
+    def get_ip(interface):
+        # Get the IP address of the interface
+        return subprocess.check_output(["ip", "addr", "show", interface]).decode("utf-8").split("inet ")[1].split("/")[0]
+
 
 class IPXE:
     # Get the directory of the script
     script_dir = os.path.dirname(os.path.realpath(__file__))
     # Get an instance of the Dnsmasq
-    self.dnsmasq = Dnsmasq()
+    dnsmasq = Dnsmasq(script_dir)
 
     @staticmethod
     def main(dnsmasq_args):
         instance = IPXE()
+        instance.prepare()
         instance.run(dnsmasq_args)
-
-    def __init__(self):
-        pass
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
@@ -23,26 +45,24 @@ class IPXE:
         print("  -h, --help\t\t\tShow this help message and exit")
         sys.exit(1)
 
-    def prepare(self, ipxe_server_ip, next_server_ip):
+    def prepare(self, next_server_ip=None):
         # Create /etc/dnsmasq.conf
+        interface       = Network.get_interface()
+        ipxe_server_ip  = Network.get_ip(interface)
+
+        # If next_server_ip is not specified, use ipxe_server_ip. It requires that the DHCP server is running on the same host as the iPXE server.
+        if next_server_ip is None:
+            next_server_ip = ipxe_server_ip
+
+        print("interface: " + interface + ", ipxe_server_ip: " + ipxe_server_ip + ", next_server_ip: " + next_server_ip + ".")
+
         self.dnsmasq.create_config(ipxe_server_ip, next_server_ip)
 
-    def run(self):
+    def run(self, dnsmasq_args):
         # Run dnsmasq process
-        subprocess.run(["dnsmasq", "--keep-in-foreground", "--user", "dnsmasq" "--conf-dir", "/etc/dnsmasq.d"])
+        subprocess.run(["dnsmasq", "--keep-in-foreground", "--user", "dnsmasq" "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
 
-
-class Dnsmasq:
-
-    def create_config(self, ipxe_server_ip, next_server_ip):
-        # Create /etc/dnsmasq.conf from a template
-        with open(os.path.join(self.script_dir, 'dnsmasq.conf.j2'), 'r') as f:
-            template = jinja2.Template(f.read())
-            content = template.render({"ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
-
-        with open('/etc/dnsmasq.conf', 'w') as f:
-            f.write(content)
 
 if __name__ == '__main__':
-    IPXE().main(sys.argv[1:])
+    IPXE.main(sys.argv[1:])
 
