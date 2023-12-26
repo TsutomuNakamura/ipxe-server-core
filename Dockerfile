@@ -17,12 +17,14 @@ RUN apt-get update && \
 FROM alpine:3.14
 
 COPY --from=0 /pxeboot /pxeboot
-COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
-COPY entrypoint.py /entrypoint.py
 
 RUN apk update && \
     apk add dnsmasq python3 py3-jinja2 iproute2 && \
-    rm -rf /var/cache/apk/* && \
-    chmod 755 /entrypoint.py
+    rm -rf /var/cache/apk/*
+
+COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
+COPY entrypoint.py /entrypoint.py
+
+RUN chmod 755 /entrypoint.py
 
 ENTRYPOINT ["/entrypoint.py"]

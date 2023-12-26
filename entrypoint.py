@@ -13,6 +13,7 @@ class Dnsmasq:
             content = template.render({"ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
 
         with open('/etc/dnsmasq.conf', 'w') as f:
+            print(content)
             f.write(content)
 
 
@@ -54,7 +55,7 @@ class IPXE:
         if next_server_ip is None:
             next_server_ip = ipxe_server_ip
 
-        print("interface: " + interface + ", ipxe_server_ip: " + ipxe_server_ip + ", next_server_ip: " + next_server_ip + ".")
+        print("interface: " + interface + ", ipxe_server_ip: " + ipxe_server_ip + ", next_server_ip: " + next_server_ip)
 
         self.dnsmasq.create_config(ipxe_server_ip, next_server_ip)
 
