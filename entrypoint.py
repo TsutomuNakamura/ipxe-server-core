@@ -10,7 +10,7 @@ class Dnsmasq:
         # Create /etc/dnsmasq.conf from a template
         with open(os.path.join(self.script_dir, '/etc/dnsmasq.conf.j2'), 'r') as f:
             template = jinja2.Template(f.read())
-            content = template.render({"interface", interface, "ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
+            content = template.render({"interface": interface, "ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
 
         with open('/etc/dnsmasq.conf', 'w') as f:
             print(content)
@@ -63,9 +63,7 @@ class IPXE:
     def run(self, dnsmasq_args):
         # Run dnsmasq process
         print("Starting dnsmasq...")
-        #subprocess.run(["dnsmasq", "--conf-file", "/etc/dnsmasq.conf", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
-        subprocess.run(["sleep", "9999999"])
-
+        subprocess.run(["dnsmasq", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
 
 if __name__ == '__main__':
     IPXE.main(sys.argv[1:])
