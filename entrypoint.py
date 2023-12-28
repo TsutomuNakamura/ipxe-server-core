@@ -6,11 +6,11 @@ class Dnsmasq:
     def __init__(self, script_dir):
         self.script_dir = script_dir
 
-    def create_config(self, ipxe_server_ip, next_server_ip):
+    def create_config(self, interface, ipxe_server_ip, next_server_ip):
         # Create /etc/dnsmasq.conf from a template
         with open(os.path.join(self.script_dir, '/etc/dnsmasq.conf.j2'), 'r') as f:
             template = jinja2.Template(f.read())
-            content = template.render({"ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
+            content = template.render({"interface", interface, "ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
 
         with open('/etc/dnsmasq.conf', 'w') as f:
             print(content)
@@ -21,7 +21,8 @@ class Network:
     @staticmethod
     def get_interface():
         # Get the interface name
-        return subprocess.check_output(["ip", "route"]).decode("utf-8").split("dev ")[1].split(" ")[0]
+        return subprocess.check_output(["ip", "rout"]).decode("utf-8").split("dev ")[1].split(" ")[0]
+
     @staticmethod
     def get_ip(interface):
         # Get the IP address of the interface
@@ -57,11 +58,13 @@ class IPXE:
 
         print("interface: " + interface + ", ipxe_server_ip: " + ipxe_server_ip + ", next_server_ip: " + next_server_ip)
 
-        self.dnsmasq.create_config(ipxe_server_ip, next_server_ip)
+        self.dnsmasq.create_config(interface, ipxe_server_ip, next_server_ip)
 
     def run(self, dnsmasq_args):
         # Run dnsmasq process
-        subprocess.run(["dnsmasq", "--keep-in-foreground", "--user", "dnsmasq" "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
+        print("Starting dnsmasq...")
+        #subprocess.run(["dnsmasq", "--conf-file", "/etc/dnsmasq.conf", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
+        subprocess.run(["sleep", "9999999"])
 
 
 if __name__ == '__main__':
