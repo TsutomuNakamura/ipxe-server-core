@@ -10,21 +10,19 @@ RUN apt-get update && \
     if [ -n "$IPXE_COMMIT" ]; then git -C ipxe checkout -b "$IPXE_COMMIT" "$IPXE_COMMIT"; fi && \
     cd ipxe/src && \
     make bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi && \
-    cp -v bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi /pxeboot/firmware/ && \
+    cp bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi /pxeboot/firmware/ && \
     cd ../../ && \
     rm -rf ipxe
 
 FROM alpine:3.14
 
 COPY --from=0 /pxeboot /pxeboot
-
-RUN apk update && \
-    apk add dnsmasq python3 py3-jinja2 iproute2 && \
-    rm -rf /var/cache/apk/*
-
 COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
 COPY entrypoint.py /entrypoint.py
 
-RUN chmod 755 /entrypoint.py
+RUN apk update && \
+    apk add dnsmasq python3 py3-jinja2 iproute2 && \
+    chmod 755 /entrypoint.py && \
+    rm -rf /var/cache/apk/*
 
 ENTRYPOINT ["/entrypoint.py"]
