@@ -68,7 +68,7 @@ class IPXE:
         if next_server_ip is None:
             next_server_ip = ipxe_server_ip
 
-        use_default_dhcp_range = verify_to_use_default_dhcp_range()
+        use_default_dhcp_range = self.verify_to_use_default_dhcp_range()
 
         print("interface: " + interface + ", ipxe_server_ip: " 
               + ipxe_server_ip + ", next_server_ip: " + next_server_ip 
@@ -85,7 +85,7 @@ class IPXE:
 
     def run(self, dnsmasq_args):
         # Run dnsmasq process
-        print("Starting dnsmasq. (dnsmasq --keep-in-foreground --conf-dir /etc/dnsmasq.d " + str(dnsmasq_args) + ")")
+        print("Starting dnsmasq. (dnsmasq --keep-in-foreground --conf-dir /etc/dnsmasq.d " + " ".join(dnsmasq_args) + ")")
         subprocess.run(["dnsmasq", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
 
 if __name__ == '__main__':
