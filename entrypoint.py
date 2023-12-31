@@ -6,7 +6,7 @@ class Dnsmasq:
     def __init__(self, script_dir):
         self.script_dir = script_dir
 
-    def create_config(self, interface, ipxe_server_ip, next_server_ip):
+    def create_config(self, interface, ipxe_server_ip, next_server_ip, use_default_dhcp_range):
         if os.path.exists('/etc/dnsmasq.conf'):
             # If /etc/dnsmasq.conf already exists, do nothing because it is probably mounted by the user.
             return
@@ -14,7 +14,12 @@ class Dnsmasq:
         # Create /etc/dnsmasq.conf from a template
         with open(os.path.join(self.script_dir, '/etc/dnsmasq.conf.j2'), 'r') as f:
             template = jinja2.Template(f.read())
-            content = template.render({"interface": interface, "ipxe_server_ip": ipxe_server_ip, "next_server_ip": next_server_ip})
+            content = template.render({
+                "interface": interface,
+                "ipxe_server_ip": ipxe_server_ip,
+                "next_server_ip": next_server_ip,
+                "use_default_dhcp_range": use_default_dhcp_range
+            })
 
         with open('/etc/dnsmasq.conf', 'w') as f:
             print(content)
@@ -41,9 +46,12 @@ class IPXE:
 
     @staticmethod
     def main(dnsmasq_args):
-        instance = IPXE()
+        instance = IPXE(dnsmasq_args)
         instance.prepare()
         instance.run(dnsmasq_args)
+
+    def __init__(self, dnsmasq_args):
+        self.dnsmasq_args = dnsmasq_args
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
@@ -60,9 +68,20 @@ class IPXE:
         if next_server_ip is None:
             next_server_ip = ipxe_server_ip
 
-        print("interface: " + interface + ", ipxe_server_ip: " + ipxe_server_ip + ", next_server_ip: " + next_server_ip)
+        use_default_dhcp_range = verify_to_use_default_dhcp_range()
 
-        self.dnsmasq.create_config(interface, ipxe_server_ip, next_server_ip)
+        print("interface: " + interface + ", ipxe_server_ip: " 
+              + ipxe_server_ip + ", next_server_ip: " + next_server_ip 
+              + ", use_default_dhcp_range: " + str(use_default_dhcp_range))
+
+        self.dnsmasq.create_config(interface, ipxe_server_ip, next_server_ip, use_default_dhcp_range)
+
+    def verify_to_use_default_dhcp_range(self):
+        # Check if the user specified the DHCP range
+        for arg in self.dnsmasq_args:
+            if arg.startswith("--dhcp-range"):
+                return False
+        return True
 
     def run(self, dnsmasq_args):
         # Run dnsmasq process
