@@ -52,6 +52,7 @@ class IPXE:
 
     def __init__(self, dnsmasq_args):
         self.dnsmasq_args = dnsmasq_args
+        self.next_server_ip = os.environ.get('NEXT_SERVER_IP')
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
