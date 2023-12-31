@@ -16,7 +16,7 @@ domain=example.com
 ## If you want to use another DHCP server that has been already running in your network,
 ## you should set dnamasq as proxy mode by setting "dhcp-range=x.x.x.x,proxy (x.x.x.x is a IP of pxe-server)".
 ## Or you can specify these parameters as arguments when running dnsmasq.
-dhcp-range={{ ipxe_server_ip }},proxy
+#dhcp-range={{ ipxe_server_ip }},proxy
 
 enable-tftp
 tftp-root=/pxeboot
