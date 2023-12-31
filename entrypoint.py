@@ -47,7 +47,7 @@ class IPXE:
     @staticmethod
     def main(dnsmasq_args):
         instance = IPXE(dnsmasq_args)
-        instance.prepare()
+        instance.prepare(instance.next_server_ip)
         instance.run(dnsmasq_args)
 
     def __init__(self, dnsmasq_args):

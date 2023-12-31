@@ -40,7 +40,7 @@ docker run --rm --privileged --net=macvlan_ipxe \
 
 ### Proxy mode
 ```
-docker run --rm --privileged --net=macvlan_ipxe -ti tsutomu/ipxe-server-core
+docker run --rm --privileged --net=macvlan_ipxe -e NEXT_SERVER_IP=x.x.x.x -ti tsutomu/ipxe-server-core
 ```
 
 ## Building
