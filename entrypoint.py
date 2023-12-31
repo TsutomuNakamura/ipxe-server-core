@@ -7,6 +7,10 @@ class Dnsmasq:
         self.script_dir = script_dir
 
     def create_config(self, interface, ipxe_server_ip, next_server_ip):
+        if os.path.exists('/etc/dnsmasq.conf'):
+            # If /etc/dnsmasq.conf already exists, do nothing because it is probably mounted by the user.
+            return
+
         # Create /etc/dnsmasq.conf from a template
         with open(os.path.join(self.script_dir, '/etc/dnsmasq.conf.j2'), 'r') as f:
             template = jinja2.Template(f.read())
