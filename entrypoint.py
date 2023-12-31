@@ -66,7 +66,7 @@ class IPXE:
 
     def run(self, dnsmasq_args):
         # Run dnsmasq process
-        print("Starting dnsmasq...")
+        print("Starting dnsmasq. (dnsmasq --keep-in-foreground --conf-dir /etc/dnsmasq.d " + str(dnsmasq_args) + ")")
         subprocess.run(["dnsmasq", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args)
 
 if __name__ == '__main__':
