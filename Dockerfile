@@ -20,9 +20,12 @@ COPY --from=0 /pxeboot /pxeboot
 COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
 COPY entrypoint.py /entrypoint.py
 
+# Remove the default dnsmasq.conf file to decide whether to create a new one.
+# If the file exists, entrypoint.py will assume that the user has mounted it.
 RUN apk update && \
     apk add dnsmasq python3 py3-jinja2 iproute2 && \
     chmod 755 /entrypoint.py && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* && \
+    rm -f /etc/dnsmasq.conf
 
 ENTRYPOINT ["/entrypoint.py"]
