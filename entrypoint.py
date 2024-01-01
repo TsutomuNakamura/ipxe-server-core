@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import signal
 import os, sys, jinja2, subprocess
 
 class Dnsmasq:
@@ -38,6 +38,13 @@ class Network:
         return subprocess.check_output(["ip", "addr", "show", interface]).decode("utf-8").split("inet ")[1].split("/")[0]
 
 
+class Cleanup:
+    @staticmethod
+    def run():
+        # Stop dnsmasq process
+        print("Stopping dnsmasq.")
+        subprocess.run(["pkill", "dnsmasq"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+
 class IPXE:
     # Get the directory of the script
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -51,6 +58,7 @@ class IPXE:
         instance.run(dnsmasq_args)
 
     def __init__(self, dnsmasq_args):
+        signal.signal(signal.SIGTERM, Cleanup.run)
         self.dnsmasq_args = dnsmasq_args
         self.next_server_ip = os.environ.get('NEXT_SERVER_IP')
 
