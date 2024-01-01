@@ -17,7 +17,7 @@ docker run --rm --privileged --net=host -ti tsutomu/ipxe-server-core
 ## Running ipxe-server-core on a macvlan network
 First, you have to create a macvlan network that belonging in your host and iPXE client.
 ```
-docker network create -d macvlan --subnet 172.31.0.0/16 --ip-range=172.31.127.0/24 --gateway=172.31.0.1 -o parent=enp1s0 macvlan_ipxe
+docker network create -d macvlan --subnet=172.31.0.0/16 --ip-range=172.31.127.0/24 --gateway=172.31.0.1 -o parent=enp1s0 macvlan_ipxe
 ```
 
 Run a container with privileged mode on the macvlan that you just created previously.
