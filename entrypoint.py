@@ -6,7 +6,7 @@ class Dnsmasq:
     def __init__(self, script_dir):
         self.script_dir = script_dir
 
-    def create_config(self, interface, ipxe_server_ip, next_server_ip, use_default_dhcp_range):
+    def create_config(self, interface, ip_ipxe_server, ip_next_server, use_default_dhcp_range):
         if os.path.exists('/etc/dnsmasq.conf'):
             # If /etc/dnsmasq.conf already exists, do nothing because it is probably mounted by the user.
             return
@@ -16,8 +16,8 @@ class Dnsmasq:
             template = jinja2.Template(f.read())
             content = template.render({
                 "interface": interface,
-                "ipxe_server_ip": ipxe_server_ip,
-                "next_server_ip": next_server_ip,
+                "ip_ipxe_server": ip_ipxe_server,
+                "ip_next_server": ip_next_server,
                 "use_default_dhcp_range": use_default_dhcp_range
             })
 
@@ -54,13 +54,13 @@ class IPXE:
     @staticmethod
     def main(dnsmasq_args):
         instance = IPXE(dnsmasq_args)
-        instance.prepare(instance.next_server_ip)
+        instance.prepare(instance.ip_next_server)
         instance.run(dnsmasq_args)
 
     def __init__(self, dnsmasq_args):
         signal.signal(signal.SIGTERM, Cleanup.run)
         self.dnsmasq_args = dnsmasq_args
-        self.next_server_ip = os.environ.get('NEXT_SERVER_IP')
+        self.ip_next_server = os.environ.get('IP_NEXT_SERVER')
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
@@ -68,22 +68,22 @@ class IPXE:
         print("  -h, --help\t\t\tShow this help message and exit")
         sys.exit(1)
 
-    def prepare(self, next_server_ip=None):
+    def prepare(self, ip_next_server=None):
         # Create /etc/dnsmasq.conf
         interface       = Network.get_interface()
-        ipxe_server_ip  = Network.get_ip(interface)
+        ip_ipxe_server  = Network.get_ip(interface)
 
-        # If next_server_ip is not specified, use ipxe_server_ip. It requires that the DHCP server is running on the same host as the iPXE server.
-        if next_server_ip is None:
-            next_server_ip = ipxe_server_ip
+        # If ip_next_server is not specified, use ip_ipxe_server. It requires that the DHCP server is running on the same host as the iPXE server.
+        if ip_next_server is None:
+            ip_next_server = ip_ipxe_server
 
         use_default_dhcp_range = self.verify_to_use_default_dhcp_range()
 
-        print("interface: " + interface + ", ipxe_server_ip: " 
-              + ipxe_server_ip + ", next_server_ip: " + next_server_ip 
+        print("interface: " + interface + ", ip_ipxe_server: " 
+              + ip_ipxe_server + ", ip_next_server: " + ip_next_server
               + ", use_default_dhcp_range: " + str(use_default_dhcp_range))
 
-        self.dnsmasq.create_config(interface, ipxe_server_ip, next_server_ip, use_default_dhcp_range)
+        self.dnsmasq.create_config(interface, ip_ipxe_server, ip_next_server, use_default_dhcp_range)
 
     def verify_to_use_default_dhcp_range(self):
         # Check if the user specified the DHCP range

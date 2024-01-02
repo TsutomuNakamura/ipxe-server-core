@@ -17,7 +17,7 @@ domain=example.com
 ## you should set dnamasq as proxy mode by setting "dhcp-range=x.x.x.x,proxy (x.x.x.x is a IP of pxe-server)".
 ## Or you can specify these parameters as arguments when running dnsmasq.
 {% if use_default_dhcp_range %}
-dhcp-range={{ ipxe_server_ip }},proxy
+dhcp-range={{ ip_ipxe_server }},proxy
 {% endif %}
 
 enable-tftp
@@ -28,13 +28,13 @@ dhcp-match=set:ipxe,175
 
 # boot config for BIOS systems
 dhcp-match=set:bios-x86,option:client-arch,0
-dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ipxe_server_ip }}
-dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ next_server_ip }}/os/config/boot.ipxe,{{ next_server_ip }}
+dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_ipxe_server }}
+dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
 
 pxe-service=x86PC,"splash"
 
 # boot config for UEFI systems
 dhcp-match=set:efi-x86_64,option:client-arch,7
 dhcp-match=set:efi-x86_64,option:client-arch,9
-dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,{{ ipxe_server_ip }}
-dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ next_server_ip }}/os/config/boot.ipxe,{{ next_server_ip }}
+dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,{{ ip_ipxe_server }}
+dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
