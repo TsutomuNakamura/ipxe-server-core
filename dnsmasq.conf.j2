@@ -26,14 +26,11 @@ tftp-root=/pxeboot
 # gPXE/iPXE sends a 175 option.
 dhcp-match=set:ipxe,175
 
-# boot config for BIOS systems
-dhcp-match=set:bios-x86,option:client-arch,0
-#dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_ipxe_server }}
-##dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_next_server }}
-##dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
-
 # * DHCP boot options for BIOS systems.
 #
+# boot config for BIOS systems
+dhcp-match=set:bios-x86,option:client-arch,0
+
 # Return a location of ipxe firmware(ipxe.pxe) when the client is x86 and PXE.
 # The client will restart with iPXE after the client downloads ipxe.pxe.
 # --dhcp-boot=[tag:<tag>,]<filename>,[<servername>[,<server address>|<tftp_servername>]]
