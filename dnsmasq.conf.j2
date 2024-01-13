@@ -16,9 +16,7 @@ domain=example.com
 ## If you want to use another DHCP server that has been already running in your network,
 ## you should set dnamasq as proxy mode by setting "dhcp-range=x.x.x.x,proxy (x.x.x.x is a IP of pxe-server)".
 ## Or you can specify these parameters as arguments when running dnsmasq.
-{% if use_default_dhcp_range %}
-dhcp-range={{ ip_ipxe_server }},proxy
-{% endif %}
+#dhcp-range={{ ip_ipxe_server }},proxy
 
 enable-tftp
 tftp-root=/pxeboot
@@ -36,7 +34,7 @@ dhcp-match=set:bios-x86,option:client-arch,0
 # --dhcp-boot=[tag:<tag>,]<filename>,[<servername>[,<server address>|<tftp_servername>]]
 dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,ipxe-tftp-server,{{ ip_tftp_next_server }}
 # Return a location of ipxe script(boot.ipxe) when the client is x86 and iPXE.
-dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_next_server }}
+dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_http_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_http_next_server }}
 
 # "pxe-service" specifies a boot option which may appear in a PXE boot menu.
 # --pxe-service=[tag:<tag>,]<CSA(Client System Type)>,<menu text>[,<basename>|<bootservicetype>][,<server address>|<server_name>]
@@ -53,4 +51,5 @@ dhcp-match=set:efi-x86_64,option:client-arch,9
 # The client will restart with iPXE after the client downloads ipxe.pxe.
 dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,ipxe-tftp-server,{{ ip_tftp_next_server }}
 # Return a location of ipxe script(boot.ipxe) when the client is x86 and iPXE.
-dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_next_server }}
+dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ ip_http_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_http_next_server }}
+

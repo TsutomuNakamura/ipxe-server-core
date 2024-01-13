@@ -6,7 +6,7 @@ class Dnsmasq:
     def __init__(self, script_dir):
         self.script_dir = script_dir
 
-    def create_config(self, interface, ip_ipxe_server, ip_next_server, use_default_dhcp_range):
+    def create_config(self, interface, ip_ipxe_server, ip_tftp_next_server, ip_http_next_server):
         if os.path.exists('/etc/dnsmasq.conf'):
             # If /etc/dnsmasq.conf already exists, do nothing because it is probably mounted by the user.
             return
@@ -17,8 +17,8 @@ class Dnsmasq:
             content = template.render({
                 "interface": interface,
                 "ip_ipxe_server": ip_ipxe_server,
-                "ip_next_server": ip_next_server,
-                "use_default_dhcp_range": use_default_dhcp_range
+                "ip_tftp_next_server": ip_tftp_next_server,
+                "ip_http_next_server": ip_http_next_server
             })
 
         with open('/etc/dnsmasq.conf', 'w') as f:
@@ -57,10 +57,13 @@ class IPXE:
         instance.run(dnsmasq_args)
 
     def __init__(self, dnsmasq_args):
+        self.dnsmasq_args = dnsmasq_args
+
         signal.signal(signal.SIGTERM, Cleanup.run)
         self.dnsmasq_args = dnsmasq_args
-        self.ip_next_server = os.environ.get('IP_NEXT_SERVER')
-        instance.prepare(instance.ip_next_server)
+        self.ip_tftp_next_server = os.environ.get('IP_TFTP_NEXT_SERVER')
+        self.ip_http_next_server = os.environ.get('IP_HTTP_NEXT_SERVER')
+        self.prepare(self.ip_tftp_next_server, self.ip_http_next_server)
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
@@ -68,22 +71,28 @@ class IPXE:
         print("  -h, --help\t\t\tShow this help message and exit")
         sys.exit(1)
 
-    def prepare(self, ip_next_server=None):
+    def prepare(self, ip_tftp_next_server, ip_http_next_server):
         # Create /etc/dnsmasq.conf
         interface       = Network.get_interface()
         ip_ipxe_server  = Network.get_ip(interface)
 
-        # If ip_next_server is not specified, use ip_ipxe_server. It requires that the DHCP server is running on the same host as the iPXE server.
-        if ip_next_server is None:
-            ip_next_server = ip_ipxe_server
+        if ip_tftp_next_server is None:
+            print("IP_TFTP_NEXT_SERVER is not specified. IP of this node " + ip_ipxe_server + " will be used.")
+            ip_tftp_next_server = ip_ipxe_server
 
-        use_default_dhcp_range = self.verify_to_use_default_dhcp_range()
+        if ip_http_next_server is None:
+            print("IP_HTTP_NEXT_SERVER is not specified. IP of this node " + ip_ipxe_server + " will be used.")
+            ip_http_next_server = ip_ipxe_server
 
-        print("interface: " + interface + ", ip_ipxe_server: " 
-              + ip_ipxe_server + ", ip_next_server: " + ip_next_server
-              + ", use_default_dhcp_range: " + str(use_default_dhcp_range))
+        if self.verify_to_use_default_dhcp_range():
+            # If the user did not specify a DHCP range, use the dnsmasq as proxy mode.
+            self.dnsmasq_args.append("--dhcp-range=" + ip_ipxe_server + ",proxy")
 
-        self.dnsmasq.create_config(interface, ip_ipxe_server, ip_next_server, use_default_dhcp_range)
+        print("interface: " + interface + ", ip_tftp_next_server: " + ip_tftp_next_server
+              + ", ip_http_next_server: " + ip_http_next_server + ", ip_ipxe_server: " + ip_ipxe_server
+              + ", args: " + str(self.dnsmasq_args))
+
+        self.dnsmasq.create_config(interface, ip_ipxe_server, ip_tftp_next_server, ip_http_next_server)
 
     def verify_to_use_default_dhcp_range(self):
         # Check if the user specified the DHCP range
