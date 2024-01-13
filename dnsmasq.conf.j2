@@ -28,13 +28,32 @@ dhcp-match=set:ipxe,175
 
 # boot config for BIOS systems
 dhcp-match=set:bios-x86,option:client-arch,0
-dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_ipxe_server }}
-dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
+#dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_ipxe_server }}
+##dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,{{ ip_next_server }}
+##dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
 
+# * DHCP boot options for BIOS systems.
+#
+# Return a location of ipxe firmware(ipxe.pxe) when the client is x86 and PXE.
+# The client will restart with iPXE after the client downloads ipxe.pxe.
+# --dhcp-boot=[tag:<tag>,]<filename>,[<servername>[,<server address>|<tftp_servername>]]
+dhcp-boot=tag:bios-x86,tag:!ipxe,firmware/ipxe.pxe,ipxe-tftp-server,{{ ip_tftp_next_server }}
+# Return a location of ipxe script(boot.ipxe) when the client is x86 and iPXE.
+dhcp-boot=tag:bios-x86,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_next_server }}
+
+# "pxe-service" specifies a boot option which may appear in a PXE boot menu.
+# --pxe-service=[tag:<tag>,]<CSA(Client System Type)>,<menu text>[,<basename>|<bootservicetype>][,<server address>|<server_name>]
 pxe-service=x86PC,"splash"
 
-# boot config for UEFI systems
+# * DHCP boot options for EFI systems.
+#
+# Set a tag efi-x86_64 when the client architecture is EFI x86-64
+# You can see all architecture names in RFC4578.
 dhcp-match=set:efi-x86_64,option:client-arch,7
 dhcp-match=set:efi-x86_64,option:client-arch,9
-dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,{{ ip_ipxe_server }}
-dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,{{ ip_next_server }}
+
+# Return a location of ipxe firmware(ipxe.pxe) when the client is x86 and PXE.
+# The client will restart with iPXE after the client downloads ipxe.pxe.
+dhcp-boot=tag:efi-x86_64,tag:!ipxe,firmware/ipxe.efi,ipxe-tftp-server,{{ ip_tftp_next_server }}
+# Return a location of ipxe script(boot.ipxe) when the client is x86 and iPXE.
+dhcp-boot=tag:efi-x86_64,tag:ipxe,http://{{ ip_next_server }}/os/config/boot.ipxe,ipxe-image-server,{{ ip_next_server }}
