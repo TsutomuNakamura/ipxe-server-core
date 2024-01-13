@@ -54,13 +54,13 @@ class IPXE:
     @staticmethod
     def main(dnsmasq_args):
         instance = IPXE(dnsmasq_args)
-        instance.prepare(instance.ip_next_server)
         instance.run(dnsmasq_args)
 
     def __init__(self, dnsmasq_args):
         signal.signal(signal.SIGTERM, Cleanup.run)
         self.dnsmasq_args = dnsmasq_args
         self.ip_next_server = os.environ.get('IP_NEXT_SERVER')
+        instance.prepare(instance.ip_next_server)
 
     def usage(self):
         print("Usage: %s [options]" % sys.argv[0])
