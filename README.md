@@ -14,18 +14,18 @@ This way requires the host to be able to use ports 53(DNS), 67(DHCP), 68(DHCP), 
 docker run --rm --privileged --net=host -ti tsutomu/ipxe-server-core
 ```
 
+`ipxe-server-core` will launch as a DHCP proxy mode if you start it without any argumments.
+This means that you should prepare another DHCP that provide IP addresses to clients.
+
 ## Running ipxe-server-core on a macvlan network
 First, you have to create a macvlan network that belonging in your host and iPXE client.
+And run a container with privileged mode on the network.
 ```
 docker network create -d macvlan --subnet=172.31.0.0/16 --ip-range=172.31.127.0/24 --gateway=172.31.0.1 -o parent=enp1s0 macvlan_ipxe
-```
-
-Run a container with privileged mode on the macvlan that you just created previously.
-```
 docker run --rm --privileged --net=macvlan_ipxe -ti tsutomu/ipxe-server-core
 ```
 
-## Run as a DHCP server or as a proxy mode
+## Run as a DHCP server or as a DHCP proxy mode
 You can launch `ipxe-server-core` as a DHCP server or DHCP proxy mode.
 You have to launch it as a DHCP proxy mode if you already have another DHCP server in your network.
 
@@ -38,12 +38,15 @@ docker run --rm --privileged --net=macvlan_ipxe \
     --dhcp-option=option:dns-server,8.8.8.8
 ```
 
-### Proxy mode
+### DHCP proxy mode
 ```
-docker run --rm --privileged --net=macvlan_ipxe -e NEXT_SERVER_IP=x.x.x.x -ti tsutomu/ipxe-server-core
+docker run --rm --privileged --net=macvlan_ipxe -e NEXT_TFTP_SERVER_IP=x.x.x.x NEXT_HTTP_SERVER_IP=y.y.y.y -ti tsutomu/ipxe-server-core
 ```
 
-## Building
+`NEXT_SERVER_IP` is an IP address of the server that provide iPXE firmware with TFTP.
+`NEXT_HTTP_SERVER_IP` is an IP address of the server that provide iPXE script and images.
+
+## Building an image
 ```
 docker built -t tsutomu/ipxe-server-core .
 ```
