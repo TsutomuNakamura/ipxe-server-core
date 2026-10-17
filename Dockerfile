@@ -14,7 +14,7 @@ RUN apt-get update && \
     cd ../../ && \
     rm -rf ipxe
 
-FROM alpine:3.14
+FROM alpine:3.24
 
 COPY --from=0 /pxeboot /pxeboot
 COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
