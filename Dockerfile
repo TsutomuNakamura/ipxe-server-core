@@ -16,6 +16,8 @@ RUN apt-get update && \
 
 FROM alpine:3.24
 
+ENV PYTHONUNBUFFERED=1
+
 COPY --from=0 /pxeboot /pxeboot
 COPY dnsmasq.conf.j2 /etc/dnsmasq.conf.j2
 COPY entrypoint.py /entrypoint.py
