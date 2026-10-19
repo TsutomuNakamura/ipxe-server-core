@@ -40,7 +40,7 @@ class Network:
 
 class Cleanup:
     @staticmethod
-    def run():
+    def run(signum, frame):
         # Stop dnsmasq process
         print("Stopping dnsmasq.")
         subprocess.run(["pkill", "dnsmasq"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
