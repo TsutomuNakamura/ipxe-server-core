@@ -40,14 +40,15 @@ docker run --rm --privileged --net=macvlan_ipxe \
 
 ### DHCP proxy mode
 ```
-docker run --rm --privileged --net=macvlan_ipxe -e NEXT_TFTP_SERVER_IP=x.x.x.x NEXT_HTTP_SERVER_IP=y.y.y.y -ti tsutomu/ipxe-server-core
+docker run --rm --privileged --net=macvlan_ipxe -e IP_TFTP_NEXT_SERVER=x.x.x.x -e IP_HTTP_NEXT_SERVER=y.y.y.y -ti tsutomu/ipxe-server-core
 ```
 
-`NEXT_SERVER_IP` is an IP address of the server that provide iPXE firmware with TFTP.
-`NEXT_HTTP_SERVER_IP` is an IP address of the server that provide iPXE script and images.
+`IP_TFTP_NEXT_SERVER` is an IP address of the server that provide iPXE firmware with TFTP.
+`IP_HTTP_NEXT_SERVER` is an IP address of the server that provide iPXE script and images.
+If either of them is not specified, the IP of the ipxe-server-core container will be used.
 
 ## Building an image
 ```
-docker built -t tsutomu/ipxe-server-core .
+docker build -t tsutomu/ipxe-server-core .
 ```
 
