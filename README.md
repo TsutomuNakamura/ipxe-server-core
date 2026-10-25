@@ -47,6 +47,19 @@ docker run --rm --privileged --net=macvlan_ipxe -e IP_TFTP_NEXT_SERVER=x.x.x.x -
 `IP_HTTP_NEXT_SERVER` is an IP address of the server that provide iPXE script and images.
 If either of them is not specified, the IP of the ipxe-server-core container will be used.
 
+## Logs
+Logs of dnsmasq, including errors and files sent by TFTP, are written to `docker logs`.
+
+```
+docker logs ipxe-server-core
+```
+
+If you want to see details of each DHCP request, add `--log-dhcp` to the arguments.
+If you want to write logs to a file instead, add `--log-facility=<path to a file>`.
+
+The container exits with the exit code of dnsmasq.
+For example, the exit code will be non-zero if dnsmasq failed to start because a port is already in use.
+
 ## Building an image
 ```
 docker build -t tsutomu/ipxe-server-core .
