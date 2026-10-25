@@ -39,8 +39,14 @@ class Network:
 
 
 class Cleanup:
+    dnsmasq_started = False
+
     @staticmethod
     def run(signum, frame):
+        if not Cleanup.dnsmasq_started:
+            # dnsmasq is not running yet. Exit now instead of starting it after this handler returns.
+            print("Stopping before dnsmasq was started.")
+            sys.exit(128 + signum)
         # Stop dnsmasq process
         print("Stopping dnsmasq.")
         subprocess.run(["pkill", "dnsmasq"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -54,7 +60,8 @@ class IPXE:
     @staticmethod
     def main(dnsmasq_args):
         instance = IPXE(dnsmasq_args)
-        instance.run(dnsmasq_args)
+        # Exit with the exit code of dnsmasq, so that a failure of dnsmasq is not hidden
+        sys.exit(instance.run(dnsmasq_args))
 
     def __init__(self, dnsmasq_args):
         self.dnsmasq_args = dnsmasq_args
@@ -101,10 +108,26 @@ class IPXE:
                 return False
         return True
 
+    def verify_to_use_default_log_facility(self):
+        # dnsmasq refuses --log-facility if it is specified more than once
+        for arg in self.dnsmasq_args:
+            if arg.startswith("--log-facility") or arg.startswith("-8"):
+                return False
+        return True
+
     def run(self, dnsmasq_args):
         # Run dnsmasq process
-        print("Starting dnsmasq. (dnsmasq --keep-in-foreground --conf-dir /etc/dnsmasq.d " + " ".join(dnsmasq_args) + ")")
-        subprocess.run(["dnsmasq", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"] + dnsmasq_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        command = ["dnsmasq", "--keep-in-foreground", "--conf-dir", "/etc/dnsmasq.d"]
+        if self.verify_to_use_default_log_facility():
+            # There is no syslog in the container. Log to stderr so that the messages appear in "docker logs".
+            command.append("--log-facility=-")
+        command += dnsmasq_args
+        print("Starting dnsmasq. (" + " ".join(command) + ")")
+        Cleanup.dnsmasq_started = True
+        # Do not capture stdout and stderr, so that errors of dnsmasq appear in "docker logs"
+        result = subprocess.run(command, stdin=subprocess.DEVNULL)
+        # A negative return code means that dnsmasq was killed by that signal
+        return result.returncode if result.returncode >= 0 else 128 - result.returncode
 
 if __name__ == '__main__':
     IPXE.main(sys.argv[1:])
