@@ -39,8 +39,14 @@ class Network:
 
 
 class Cleanup:
+    dnsmasq_started = False
+
     @staticmethod
     def run(signum, frame):
+        if not Cleanup.dnsmasq_started:
+            # dnsmasq is not running yet. Exit now instead of starting it after this handler returns.
+            print("Stopping before dnsmasq was started.")
+            sys.exit(128 + signum)
         # Stop dnsmasq process
         print("Stopping dnsmasq.")
         subprocess.run(["pkill", "dnsmasq"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
@@ -117,6 +123,7 @@ class IPXE:
             command.append("--log-facility=-")
         command += dnsmasq_args
         print("Starting dnsmasq. (" + " ".join(command) + ")")
+        Cleanup.dnsmasq_started = True
         # Do not capture stdout and stderr, so that errors of dnsmasq appear in "docker logs"
         result = subprocess.run(command, stdin=subprocess.DEVNULL)
         # A negative return code means that dnsmasq was killed by that signal
