@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.3.0
 
 ### Changes that may need your action
 - The DNS server of dnsmasq is disabled (`port=0`). In DHCP server mode, add `--dhcp-option=option:dns-server,<IP>`,
