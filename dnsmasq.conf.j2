@@ -1,11 +1,14 @@
 # You can change a name of interface depends on your environment.
 interface={{ interface }}
 bind-interfaces
-domain=example.com
+# Disable the DNS server of dnsmasq. Only DHCP and TFTP are needed to boot iPXE clients.
+# Clients get the address of a DNS server with "dhcp-option=option:dns-server" below.
+port=0
 
 ## * Option 1
 ## If you want to use dnsmasq as a stand alone DHCP server,
 ## you should set "dhcp-range", "dhcp-option=option:router", "dhcp-option=option:dns-server".
+## "dhcp-option=option:dns-server" is required, otherwise clients get no DNS server because the DNS server of dnsmasq is disabled.
 ## Or you can specify these parameters as arguments when running dnsmasq.
 #dhcp-range=172.31.0.201,172.31.0.250,255.255.0.0
 #dhcp-option=option:router,172.31.0.1

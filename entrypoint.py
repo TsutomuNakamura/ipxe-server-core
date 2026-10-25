@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import signal
-import os, sys, jinja2, subprocess
+import os, sys, glob, jinja2, subprocess
 
 class Dnsmasq:
     def __init__(self, script_dir):
@@ -100,6 +100,28 @@ class IPXE:
               + ", args: " + str(self.dnsmasq_args))
 
         self.dnsmasq.create_config(interface, ip_ipxe_server, ip_tftp_next_server, ip_http_next_server)
+        self.warn_if_no_dns_server()
+
+    def dnsmasq_settings(self):
+        # Options given as arguments and in the config files, as "name=value"
+        settings = [arg[2:] for arg in self.dnsmasq_args if arg.startswith("--")]
+        for path in ["/etc/dnsmasq.conf"] + sorted(glob.glob("/etc/dnsmasq.d/*")):
+            try:
+                with open(path) as f:
+                    settings += [line.strip() for line in f if line.strip() and not line.strip().startswith("#")]
+            except OSError:
+                pass
+        return settings
+
+    def warn_if_no_dns_server(self):
+        # The DNS server of dnsmasq is disabled (port=0), so a DHCP server must tell clients another DNS server
+        settings = self.dnsmasq_settings()
+        dhcp_server = any(s.startswith("dhcp-range=") and not s.endswith(",proxy") for s in settings)
+        dns_server = any(s.startswith("dhcp-option=") and {"6", "option:dns-server"} & set(s[len("dhcp-option="):].split(","))
+                         for s in settings)
+        if dhcp_server and not dns_server:
+            print("WARNING: dnsmasq runs as a DHCP server without --dhcp-option=option:dns-server, so clients will get no DNS server."
+                  + " Add it, e.g. --dhcp-option=option:dns-server,<IP of your router or DNS server>")
 
     def verify_to_use_default_dhcp_range(self):
         # Check if the user specified the DHCP range

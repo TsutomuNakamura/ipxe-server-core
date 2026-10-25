@@ -8,7 +8,7 @@ This image requires network drivers `host` or `macvlan` that is belonging in the
 
 ## Running ipxe-server-core on a host network
 An example to run ipxe-server-core on your host network is like below.
-This way requires the host to be able to use ports 53(DNS), 67(DHCP), 68(DHCP), 69(TFTP).
+This way requires the host to be able to use ports 67 (DHCP), 69 (TFTP) and 4011 (DHCP proxy) of UDP.
 
 ```
 docker run --rm --privileged --net=host -ti tsutomu/ipxe-server-core
@@ -32,11 +32,16 @@ You have to launch it as a DHCP proxy mode if you already have another DHCP serv
 ### DHCP server mode
 ```
 docker run --rm --privileged --net=macvlan_ipxe \
-    -ti tsutomu/ipxe-server-core -- \
+    -ti tsutomu/ipxe-server-core \
     --dhcp-range=172.31.0.201,172.31.0.250,255.255.0.0 \
     --dhcp-option=option:router,172.31.0.1 \
     --dhcp-option=option:dns-server,8.8.8.8
 ```
+
+`--dhcp-option=option:dns-server` is required in DHCP server mode.
+It is the DNS server that clients will use, e.g. your router or `8.8.8.8` if clients can reach the internet.
+dnsmasq in this image does not work as a DNS server, so clients get no DNS server without it, and the installer cannot reach package mirrors.
+You do not need it in DHCP proxy mode, because clients get their DNS server from your DHCP server.
 
 ### DHCP proxy mode
 ```
@@ -46,6 +51,9 @@ docker run --rm --privileged --net=macvlan_ipxe -e IP_TFTP_NEXT_SERVER=x.x.x.x -
 `IP_TFTP_NEXT_SERVER` is an IP address of the server that provide iPXE firmware with TFTP.
 `IP_HTTP_NEXT_SERVER` is an IP address of the server that provide iPXE script and images.
 If either of them is not specified, the IP of the ipxe-server-core container will be used.
+
+## UEFI Secure Boot
+`ipxe.efi` in this image is not signed, so UEFI clients must boot with Secure Boot disabled.
 
 ## Logs
 Logs of dnsmasq, including errors and files sent by TFTP, are written to `docker logs`.
@@ -63,5 +71,12 @@ For example, the exit code will be non-zero if dnsmasq failed to start because a
 ## Building an image
 ```
 docker build -t tsutomu/ipxe-server-core .
+```
+
+iPXE v2.0.0 is built by default. You can build another tag or commit of [iPXE](https://github.com/ipxe/ipxe) with `IPXE_COMMIT`.
+An empty value builds the latest master.
+
+```
+docker build --build-arg IPXE_COMMIT=v2.0.0 -t tsutomu/ipxe-server-core .
 ```
 

@@ -1,13 +1,15 @@
 FROM ubuntu:22.04
 
-ARG IPXE_COMMIT
+# A tag or a commit of iPXE (https://github.com/ipxe/ipxe) to build, so that builds are reproducible.
+# Pass --build-arg IPXE_COMMIT= (empty) to build the latest master.
+ARG IPXE_COMMIT=v2.0.0
 
 RUN apt-get update && \
     apt-get install -y build-essential liblzma-dev isolinux git iproute2 && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -p /pxeboot/config /pxeboot/firmware /pxeboot/os-images && \
     git clone https://github.com/ipxe/ipxe.git && \
-    if [ -n "$IPXE_COMMIT" ]; then git -C ipxe checkout -b "$IPXE_COMMIT" "$IPXE_COMMIT"; fi && \
+    if [ -n "$IPXE_COMMIT" ]; then git -C ipxe checkout --detach "$IPXE_COMMIT"; fi && \
     cd ipxe/src && \
     make bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi && \
     cp bin/ipxe.pxe bin/undionly.kpxe bin/undionly.kkpxe bin/undionly.kkkpxe bin-x86_64-efi/ipxe.efi /pxeboot/firmware/ && \
